@@ -3,9 +3,44 @@
 <head>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width,initial-scale=1" />
-	<title>Venta de Laptops</title>
+	<title>Venta de Laptops - Tienda Online</title>
 	<link rel="stylesheet" href="style.css">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+	<!-- Meta para SEO y compartir en redes -->
+	<meta name="description" content="Tienda de laptops con carrito funcional, 20 productos disponibles, compra segura y diseño adaptable. Entrega rápida.">
+	<meta name="keywords" content="laptops, computadoras, tienda online, carrito de compras">
+	<meta name="author" content="Tienda de Laptops">
+	<meta name="robots" content="index, follow">
+	<link rel="canonical" href="https://usuario.github.io/mi-pagina/">
+
+	<!-- Open Graph para Facebook, WhatsApp, LinkedIn -->
+	<meta property="og:title" content="Venta de Laptops - Tienda Online">
+	<meta property="og:description" content="Tienda de laptops con carrito funcional, 20 productos disponibles, compra segura y diseño adaptable. Entrega rápida.">
+	<meta property="og:url" content="https://usuario.github.io/mi-pagina/">
+	<meta property="og:type" content="website">
+	<meta property="og:image" content="https://usuario.github.io/mi-pagina/og-image.jpg">
+	<meta property="og:image:width" content="1200">
+	<meta property="og:image:height" content="630">
+	<meta property="og:locale" content="es_ES">
+	<meta property="og:site_name" content="Venta de Laptops">
+
+	<!-- Twitter Card -->
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:title" content="Venta de Laptops - Tienda Online">
+	<meta name="twitter:description" content="Tienda de laptops con carrito funcional, 20 productos disponibles, compra segura y diseño adaptable.">
+	<meta name="twitter:image" content="https://usuario.github.io/mi-pagina/og-image.jpg">
+	<meta name="twitter:creator" content="@tuusuario">
+
+	<!-- Favicon y colores -->
+	<meta name="theme-color" content="#063847">
+	<meta name="msapplication-TileColor" content="#063847">
+	<link rel="icon" type="image/png" href="favicon.png" sizes="32x32">
+	<link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+	<!-- Prefetch para redes -->
+	<link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+</head>
 	<style>
 		/* Pequeños ajustes locales */
 		.title{ text-align:center; margin:18px 0; font-size:2rem }
@@ -216,6 +251,30 @@
 	</div>
 
 	<script>
+		// Captura errores globales para que no rompan la ejecución
+		window.onerror = function(msg, src, line, col, err){
+			console.error('Global error:', msg, 'at', src + ':' + line + ':' + col, err);
+			return false;
+		};
+
+		function ensureNavbarBadge(){
+			let el = document.getElementById('cartCounterBadge');
+			if(!el){
+				const toggle = document.getElementById('cartToggle');
+				if(toggle){
+					el = document.createElement('span');
+					el.id = 'cartCounterBadge';
+					el.style.background = 'red';
+					el.style.color = '#fff';
+					el.style.borderRadius = '50%';
+					el.style.padding = '2px 6px';
+					el.style.fontSize = '12px';
+					el.style.marginLeft = '6px';
+					toggle.appendChild(el);
+				}
+			}
+			return el;
+		}
 		const products = [];
 		for(let i=1;i<=20;i++){
 			products.push({
@@ -319,7 +378,7 @@
 		const cartToggle = document.getElementById('cartToggle');
 		const cartCloseBtn = document.getElementById('cartCloseBtn');
 		const cartItemsList = document.getElementById('cartItemsList');
-		const cartCounterBadge = document.getElementById('cartCounterBadge');
+		const cartCounterBadge = ensureNavbarBadge() || document.getElementById('cartCounterBadge');
 		const cartBadge = document.getElementById('cartBadge');
 		const cartTotal = document.getElementById('cartTotal');
 		const checkoutBtn = document.getElementById('checkoutBtn');
