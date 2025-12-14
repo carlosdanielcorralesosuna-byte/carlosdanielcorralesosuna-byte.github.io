@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="es">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width,initial-scale=1" />
+	<title>Venta de Laptops</title>
+	<link rel="stylesheet" href="style.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+	<style>
+		/* Pequeños ajustes locales */
+		.title{ text-align:center; margin:18px 0; font-size:2rem }
+		.productos{padding:12px 0}
+		.card .card-title{font-weight:700}
+		.btn-small{padding:8px 10px;font-size:0.95rem}
+		.modal.show{display:flex}
+		.form-row{display:flex;gap:8px}
+		.form-row .field{flex:1}
+		.cart-btn-top{position:relative;background:var(--accent);color:#fff;border:none;padding:10px 14px;border-radius:6px;cursor:pointer;font-size:1.1rem;margin-right:8px}
+		.cart-btn-top:hover{opacity:0.9}
+		.cart-badge{position:absolute;top:-8px;right:-8px;background:#d32f2f;color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700}
+		.cart-sidebar{position:fixed;right:0;top:0;width:350px;height:100%;background:#fff;box-shadow:-4px 0 20px rgba(0,0,0,0.15);z-index:1100;transform:translateX(100%);transition:transform 0.3s ease;display:flex;flex-direction:column;padding:20px}
+		.cart-sidebar.open{transform:translateX(0)}
+		.cart-header{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #f0f0f0;padding-bottom:12px;margin-bottom:16px}
+		.cart-header h3{margin:0;font-size:1.2rem}
+		.cart-close{background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--accent)}
+		.cart-items-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px}
+		.cart-item-row{display:flex;gap:12px;border:1px solid #eee;padding:10px;border-radius:6px;align-items:center}
+		.cart-item-img{width:60px;height:45px;object-fit:cover;border-radius:4px;background:#f5f5f5}
+		.cart-item-info{flex:1;font-size:0.95rem}
+		.cart-item-name{font-weight:700;color:var(--accent)}
+		.cart-item-price{color:var(--muted);font-size:0.9rem}
+		.cart-item-qty{display:flex;gap:4px;align-items:center;margin-top:4px}
+		.cart-item-remove{background:#f5f5f5;color:#d32f2f;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-weight:700;font-size:0.85rem}
+		.cart-footer{display:flex;flex-direction:column;gap:8px;border-top:2px solid #f0f0f0;padding-top:12px;margin-top:12px}
+		.cart-total{font-size:1.1rem;font-weight:700;color:var(--accent);text-align:center}
+		.cart-checkout{width:100%;background:var(--accent);color:#fff;border:none;padding:12px;border-radius:6px;cursor:pointer;font-weight:700;font-size:0.95rem}
+		.cart-checkout:hover{opacity:0.9}
+		.cart-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:1050;display:none}
+		.cart-overlay.open{display:block}
+		
+		/* Estilos carrito mejorado */
+		.navbar {
+			width: 100%;
+			background-color: #f5f5f5;
+			padding: 10px 20px;
+			position: relative;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+		}
+		
+		.cart {
+			position: relative;
+			color: black;
+			font-size: 24px;
+			cursor: pointer;
+			background: none;
+			border: none;
+		}
+		
+		.cart span {
+			background: red;
+			color: white;
+			border-radius: 50%;
+			padding: 2px 6px;
+			font-size: 12px;
+			position: absolute;
+			top: -8px;
+			right: -10px;
+		}
+		
+		/* Ajuste para content con navbar fija */
+		body {
+			padding-top: 50px;
+		}
+		
+		/* Media queries para móviles */
+		@media(max-width:768px){
+			.title{font-size:1.5rem;margin:12px 0}
+			.cart-sidebar{width:100%;max-width:90vw}
+			.cart{font-size:20px}
+			.navbar{padding:10px}
+		}
+		
+		@media(max-width:560px){
+			body{padding-top:60px}
+			.title{font-size:1.3rem;margin:8px 0}
+			.cart-sidebar{width:100vw;padding:16px}
+			.cart{font-size:18px}
+			.navbar{padding:8px 10px}
+			.cart span{padding:1px 4px;font-size:10px}
+			.cart-header h3{font-size:1rem}
+			.cart-item-img{width:50px;height:40px}
+			.cart-item-info{font-size:0.9rem}
+			.modal-content{padding:12px}
+			.form-row{flex-direction:column}
+			.form-row .field{width:100%}
+		}
+	</style>
+</head>
+<body>
+	<!-- Barra navbar fija -->
+	<div class="navbar">
+		<button id="cartToggle" class="cart">
+			🛒
+			<span id="cartCounterBadge">0</span>
+		</button>
+	</div>
+
+	<header class="site-header">
+		<div class="container header-inner">
+			<h1 class="brand title">Venta de Laptops</h1>
+		</div>
+	</header>
+
+	<!-- Overlay carrito -->
+	<div id="cartOverlay" class="cart-overlay"></div>
+
+	<!-- Carrito lateral -->
+	<aside id="cartSidebar" class="cart-sidebar">
+		<div class="cart-header">
+			<h3>Carrito de compras</h3>
+			<button class="cart-close" id="cartCloseBtn">✕</button>
+		</div>
+		<div class="cart-items-list" id="cartItemsList"></div>
+		<div class="cart-footer">
+			<div class="cart-total">Total: <span id="cartTotal">$0.00</span></div>
+			<button class="cart-checkout" id="checkoutBtn">Proceder al pago</button>
+		</div>
+	</aside>
+
+	<main class="container">
+		<section class="productos">
+			<h2 class="section-title">Nuestros productos</h2>
+			<div class="grid" id="productGrid"></div>
+		</section>
+
+		<section class="about" style="margin-top:28px">
+			<h2 class="section-title">Sobre esta página</h2>
+			<p style="max-width:900px;margin:0 auto;color:#27474a">Bienvenido a nuestra tienda de laptops. Aquí encontrarás modelos seleccionados para trabajo, estudio y gaming. Usa el botón "Detalles" para ver especificaciones y el botón "Comprar" para abrir el formulario de pago seguro (simulado).</p>
+		</section>
+
+		<section class="contact" style="margin-top:28px;padding-bottom:48px">
+			<h2 class="section-title">Contacto</h2>
+			<form class="contact-form" id="contactForm">
+				<label>Nombre
+					<input type="text" id="contactName" required>
+				</label>
+				<label>Email
+					<input type="email" id="contactEmail" required>
+				</label>
+				<label>Mensaje
+					<textarea id="contactMsg" rows="4" required></textarea>
+				</label>
+				<div style="text-align:center;margin-top:8px">
+					<button class="btn" type="submit">Enviar mensaje</button>
+				</div>
+			</form>
+		</section>
+	</main>
+
+	<footer class="site-footer">
+		<div class="container footer-inner">
+			<small>© 2025 Tienda de Laptops — Demo de ejemplo</small>
+		</div>
+	</footer>
+
+	<!-- Modal Detalles -->
+	<div id="detailsModal" class="modal" role="dialog" aria-modal="true">
+		<div class="modal-content">
+			<button class="btn-outline" onclick="closeDetails()">Cerrar</button>
+			<img id="detailsImg" class="modal-img" src="" alt="Imagen">
+			<h3 id="detailsName"></h3>
+			<p id="detailsDesc" class="desc"></p>
+			<p><strong>Precio:</strong> <span id="detailsPrice"></span></p>
+			<p><strong>Especificaciones:</strong></p>
+			<ul id="detailsSpecs"></ul>
+		</div>
+	</div>
+
+	<!-- Modal Comprar -->
+	<div id="buyModal" class="modal" role="dialog" aria-modal="true">
+		<div class="modal-content">
+			<button class="btn-outline" onclick="closeBuy()">Cerrar</button>
+			<h3 id="buyTitle">Comprar</h3>
+			<form id="buyForm">
+				<label>Producto
+					<input type="text" id="buyProduct" readonly>
+				</label>
+				<label>Número de tarjeta
+					<input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" required>
+				</label>
+				<div class="form-row">
+					<div class="field">
+						<label>Nombre en tarjeta
+							<input type="text" id="cardName" required>
+						</label>
+					</div>
+					<div class="field">
+						<label>Exp / CVV
+							<div style="display:flex;gap:8px">
+								<input type="text" id="cardExp" placeholder="MM/AA" style="flex:1" required>
+								<input type="text" id="cardCvv" placeholder="CVV" style="width:80px" required>
+							</div>
+						</label>
+					</div>
+				</div>
+				<label>Dirección
+					<input type="text" id="address" placeholder="Calle, ciudad, país" required>
+				</label>
+				<div style="text-align:center;margin-top:12px">
+					<button class="btn" type="submit">Pagar ahora</button>
+				</div>
+			</form>
+		</div>
+	</div>
+
+	<script>
+		const products = [];
+		for(let i=1;i<=20;i++){
+			products.push({
+				id:i,
+				name:`Laptop Modelo ${i}`,
+				price:`$${(300 + i*25).toFixed(2)}`,
+				img:`https://via.placeholder.com/400x240?text=Laptop+${i}`,
+				desc:`Laptop ${i} ideal para tareas diarias y multimedia. Procesador eficiente, buena batería y diseño ligero.`,
+				specs:["Intel/AMD moderno","8-16GB RAM","256-512GB SSD","Pantalla 14-15.6"
+				]
+			})
+		}
+
+		const grid = document.getElementById('productGrid');
+		products.forEach(p=>{
+			const card = document.createElement('article');
+			card.className = 'card';
+			card.innerHTML = `
+				<img class="card-img" src="${p.img}" alt="${p.name}">
+				<h3 class="card-title">${p.name}</h3>
+				<p class="price">${p.price}</p>
+				<p class="desc">${p.desc}</p>
+				<div class="card-actions">
+					<button class="btn btn-small" onclick="showDetails(${p.id})">Detalles</button>
+					<button class="btn-outline btn-small" onclick="showBuy(${p.id})">Comprar</button>
+				</div>
+				<button class="btn btn-small" style="width:100%;margin-top:8px" onclick="addToCart(${p.id})">Agregar al carrito</button>
+			`;
+			grid.appendChild(card);
+		});
+
+		// Modales
+		const detailsModal = document.getElementById('detailsModal');
+		const buyModal = document.getElementById('buyModal');
+
+		function showDetails(id){
+			const p = products.find(x=>x.id===id);
+			document.getElementById('detailsImg').src = p.img;
+			document.getElementById('detailsName').textContent = p.name;
+			document.getElementById('detailsDesc').textContent = p.desc;
+			document.getElementById('detailsPrice').textContent = p.price;
+			const specsList = document.getElementById('detailsSpecs');
+			specsList.innerHTML = '';
+			p.specs.forEach(s=>{const li=document.createElement('li');li.textContent=s;specsList.appendChild(li)});
+			detailsModal.classList.add('show');
+		}
+		function closeDetails(){ detailsModal.classList.remove('show') }
+
+		function showBuy(id){
+			const p = products.find(x=>x.id===id);
+			document.getElementById('buyProduct').value = p.name + ' — ' + p.price;
+			buyModal.classList.add('show');
+		}
+		function closeBuy(){ buyModal.classList.remove('show') }
+
+		document.getElementById('buyForm').addEventListener('submit', function(e){
+			e.preventDefault();
+			// Simulación de pago
+			alert('Pago simulado: Gracias por su compra. (Los datos no se envían en este demo)');
+			closeBuy();
+			this.reset();
+		});
+
+		// Contact form
+		document.getElementById('contactForm').addEventListener('submit', function(e){
+			e.preventDefault();
+			alert('Mensaje enviado. Gracias por contactarnos.');
+			this.reset();
+		});
+
+		// Cerrar modales al pulsar fuera del contenido
+		document.addEventListener('click', function(e){
+			if(e.target === detailsModal) closeDetails();
+			if(e.target === buyModal) closeBuy();
+		});
+
+		// ===== CARRITO DE COMPRAS =====
+		let cart = [];
+		
+		// Cargar carrito del localStorage
+		function loadCartFromStorage(){
+			const saved = localStorage.getItem('laptopsCart');
+			if(saved){
+				try{
+					cart = JSON.parse(saved);
+					updateCart();
+				}catch(e){
+					console.error('Error loading cart:', e);
+					cart = [];
+				}
+			}
+		}
+		
+		// Guardar carrito en localStorage
+		function saveCartToStorage(){
+			localStorage.setItem('laptopsCart', JSON.stringify(cart));
+		}
+		
+		const cartSidebar = document.getElementById('cartSidebar');
+		const cartOverlay = document.getElementById('cartOverlay');
+		const cartToggle = document.getElementById('cartToggle');
+		const cartCloseBtn = document.getElementById('cartCloseBtn');
+		const cartItemsList = document.getElementById('cartItemsList');
+		const cartCounterBadge = document.getElementById('cartCounterBadge');
+		const cartBadge = document.getElementById('cartBadge');
+		const cartTotal = document.getElementById('cartTotal');
+		const checkoutBtn = document.getElementById('checkoutBtn');
+
+		function addToCart(id){
+			const p = products.find(x => x.id === id);
+			const existingItem = cart.find(item => item.id === id);
+			if(existingItem){
+				existingItem.qty++;
+			} else {
+				cart.push({...p, qty: 1});
+			}
+			updateCart();
+			saveCartToStorage();
+			openCart();
+		}
+
+		function removeFromCart(id){
+			cart = cart.filter(item => item.id !== id);
+			updateCart();
+			saveCartToStorage();
+		}
+
+		function updateCart(){
+			// Actualizar UI del carrito
+			cartItemsList.innerHTML = '';
+			let total = 0;
+			let count = 0;
+
+			cart.forEach(item => {
+				const priceNum = parseFloat(item.price.replace('$', ''));
+				const itemTotal = priceNum * item.qty;
+				total += itemTotal;
+				count += item.qty;
+
+				const itemRow = document.createElement('div');
+				itemRow.className = 'cart-item-row';
+				itemRow.innerHTML = `
+					<img class="cart-item-img" src="${item.img}" alt="${item.name}">
+					<div class="cart-item-info">
+						<div class="cart-item-name">${item.name}</div>
+						<div class="cart-item-price">${item.price}</div>
+						<div class="cart-item-qty">
+							<span>Cant: <strong>${item.qty}</strong></span>
+						</div>
+					</div>
+					<button class="cart-item-remove" onclick="removeFromCart(${item.id})">Quitar</button>
+				`;
+				cartItemsList.appendChild(itemRow);
+			});
+
+			cartTotal.textContent = '$' + total.toFixed(2);
+		
+		// Actualizar contador en navbar
+		cartCounterBadge.textContent = count;
+		
+		if(count > 0){
+			cartBadge.style.display = 'flex';
+			cartBadge.textContent = count;
+		} else {
+			cartBadge.style.display = 'none';
+		}
+			if(cart.length === 0){
+				cartItemsList.innerHTML = '<p style="text-align:center;color:var(--muted);margin-top:20px">No hay productos en el carrito</p>';
+			}
+		}
+
+		function openCart(){
+			cartSidebar.classList.add('open');
+			cartOverlay.classList.add('open');
+		}
+
+		function closeCart(){
+			cartSidebar.classList.remove('open');
+			cartOverlay.classList.remove('open');
+		}
+
+		cartToggle.addEventListener('click', openCart);
+		cartCloseBtn.addEventListener('click', closeCart);
+		cartOverlay.addEventListener('click', closeCart);
+
+		checkoutBtn.addEventListener('click', function(){
+			if(cart.length === 0){
+				alert('El carrito está vacío.');
+				return;
+			}
+			closeCart();
+			showBuyModal();
+		});
+
+		function showBuyModal(){
+			const total = cart.reduce((sum, item) => sum + parseFloat(item.price.replace('$', '')) * item.qty, 0).toFixed(2);
+			const itemNames = cart.map(item => item.name).join(', ');
+			document.getElementById('buyProduct').value = itemNames + ' — Total: $' + total;
+			buyModal.classList.add('show');
+		}
+		
+		// Cargar carrito al iniciar la página
+		loadCartFromStorage();
+	</script>
+</body>
+</html>
+
